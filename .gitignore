@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Local signing keys must never be committed
+*.pem
+*.key
+keys/
+
+# CDK (Phase 3)
+infra/cdk.out/
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json

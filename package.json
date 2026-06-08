@@ -1,0 +1,23 @@
+{
+  "name": "sso-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SSO MVP — Single Point of Authentication (study project, Node + TypeScript)",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --noEmit || tsc --noEmit",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

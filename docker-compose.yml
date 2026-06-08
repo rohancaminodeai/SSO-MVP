@@ -1,0 +1,25 @@
+# Phase 1 infrastructure. Starts Postgres with the three per-service databases.
+# (auth + tenant services are added to this file in later stages — "one image, many roles".)
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sso-postgres
+    environment:
+      POSTGRES_USER: sso
+      POSTGRES_PASSWORD: sso
+      # The default DB; the three app databases are created by the init script below.
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - sso-pgdata:/var/lib/postgresql/data
+      # Scripts in this dir run once, on first cluster init, in alphabetical order.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sso -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sso-pgdata:
