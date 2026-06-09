@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>P1.1 — Keys, JWT &amp; alg Pinning · SSO MVP Study Guide</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2027; --panel2:#222c36; --ink:#e6edf3; --muted:#9aa7b4;
+    --accent:#6ea8fe; --accent2:#7ee787; --warn:#f0883e; --danger:#ff7b72; --line:#30363d;
+    --idp:#a371f7; --tenant:#3fb950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header.hero{padding:34px 24px 24px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#161b22,#0f1419)}
+  header.hero h1{margin:0 0 8px;font-size:26px}
+  header.hero p{margin:0;color:var(--muted)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 10px;border-radius:20px;background:var(--panel2);color:var(--accent);
+    border:1px solid var(--accent);margin-bottom:10px}
+  .layout{display:flex;max-width:1180px;margin:0 auto;gap:28px;padding:0 24px 80px}
+  nav{position:sticky;top:0;align-self:flex-start;padding-top:26px;min-width:210px;
+    max-height:100vh;overflow-y:auto;font-size:14px}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;border-left:2px solid transparent}
+  nav a:hover{color:var(--ink);background:var(--panel)}
+  nav .grp{margin:14px 0 4px;color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  main{flex:1;min-width:0;padding-top:18px}
+  section{padding:26px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;margin:0 0 6px}
+  h3{font-size:17px;margin:22px 0 8px;color:var(--accent2)}
+  .lead{color:var(--muted);margin:0 0 14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0}
+  .card.idp{border-left:4px solid var(--idp)}
+  .card.tenant{border-left:4px solid var(--tenant)}
+  .card.accent{border-left:4px solid var(--accent)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}.layout{flex-direction:column}nav{position:static;max-height:none}}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;background:#0b0f14;border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;font-size:13.5px;color:#c8d3de}
+  pre{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+    font-size:13.5px;line-height:1.55;margin:10px 0;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  pre .c{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--ink)}
+  .muted{color:var(--muted)}
+  .note{border-left:4px solid var(--accent);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .why{border-left:4px solid var(--accent2);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .warnbox{border-left:4px solid var(--danger);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  ul,ol{padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .p200{background:rgba(63,185,80,.18);color:var(--accent2)}
+  .p401{background:rgba(240,136,62,.18);color:var(--warn)}
+  .p403{background:rgba(255,123,114,.18);color:var(--danger)}
+  .step{display:flex;gap:14px;margin:10px 0}
+  .step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step .b{flex:1}
+  .step .b b{color:var(--ink)}
+  .concept{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:0 12px 12px 0;padding:14px 20px;margin:14px 0}
+  .concept h3{margin:0 0 8px;color:var(--ink)}
+  .concept .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;font-size:14px;margin-right:8px}
+  .concept .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .analogy{background:rgba(110,168,254,.07);border:1px dashed var(--accent);border-radius:10px;padding:12px 16px;margin:12px 0}
+  .analogy b{color:var(--accent)}
+  .glossary dt{font-weight:700;color:var(--accent);margin-top:12px}
+  .glossary dd{margin:2px 0 0;color:var(--muted)}
+  a.inline{color:var(--accent);text-decoration:none}
+  a.inline:hover{text-decoration:underline}
+  footer{max-width:1180px;margin:0 auto;padding:24px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="tag">Study Guide · Phase 1 · P1.1</span>
+  <h1>P1.1 — Keys, JWT &amp; <code>alg</code> Pinning</h1>
+  <p>This stage builds the part of the system that makes a token <i>trustworthy</i>: a signing key at
+  the Identity Provider, a way to <b>mint</b> (create &amp; sign) a token, and a <b>safe</b> way for
+  anyone else to verify it. If you understand this stage, you understand why an SSO token can't be
+  faked. No cryptography background needed — we explain each idea in plain English.</p>
+  <p class="muted" style="margin-top:8px">
+    Branch <code>feat/01-keys-jwt</code> · Spec <code>specs/01-keys-jwt.md</code> ·
+    Summary <a class="inline" href="../summaries/P1.1-keys-jwt.md">../summaries/P1.1-keys-jwt.md</a> ·
+    Status: <span class="pill p200">✓ done</span>
+  </p>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="grp">Start here</div>
+  <a href="#big-idea">1 · The big idea</a>
+  <a href="#what">2 · What we built</a>
+  <a href="#concepts">3 · Must-know concepts</a>
+  <div class="grp">The code</div>
+  <a href="#how">4 · How it works</a>
+  <div class="grp">Why &amp; how</div>
+  <a href="#why">5 · Why each decision</a>
+  <a href="#adr">6 · Technical decisions (ADRs)</a>
+  <div class="grp">Practice</div>
+  <a href="#test">7 · Test it locally</a>
+  <a href="#glossary">8 · Glossary</a>
+  <a href="#quiz">9 · Self-quiz</a>
+</nav>
+
+<main>
+
+<!-- ============ 1. BIG IDEA ============ -->
+<section id="big-idea">
+  <h2>1 · The big idea</h2>
+  <p class="lead"><b>The Identity Provider signs a token with a private key only it has; everyone else
+  verifies that token with a matching public key — and we verify in a way that can't be tricked.</b></p>
+  <p>A token is just a small piece of text that says "this is Alice, and she may enter Tenant A". On
+  its own, text is worthless — anyone could type the same thing. What makes it trustworthy is a
+  <b>digital signature</b>: a mathematical seal that proves <i>who</i> created the token and that
+  <i>nobody changed it</i> afterwards.</p>
+  <p>We use <b>RS256</b> (an asymmetric algorithm): there are <b>two</b> keys, not one. A secret
+  <b>private key</b> creates the seal; a freely-shared <b>public key</b> checks it. Only the holder of
+  the private key (the IdP) can make a valid token; anyone with the public key can confirm it's real,
+  but can never make their own.</p>
+  <div class="analogy">
+    <b>Analogy.</b> A wax seal on a royal letter. Only the king's ring (the <b>private key</b>) can
+    press a genuine seal. Anyone who has seen the seal (the <b>public key</b>) can recognise a real
+    one — but they can't forge it, because they don't have the ring.
+  </div>
+</section>
+
+<!-- ============ 2. WHAT WE BUILT ============ -->
+<section id="what">
+  <h2>2 · What we built / changed</h2>
+  <p class="lead">Two small, security-critical files in the shared library, plus their tests.</p>
+  <div class="grid2">
+    <div class="card accent">
+      <h3 style="margin-top:0">Code &amp; tests</h3>
+      <ul>
+        <li><a class="inline" href="../../packages/common/src/keys.ts">keys.ts</a> — make/load an RSA
+          key pair; publish the public half as a <b>JWKS</b> with a <code>kid</code>.</li>
+        <li><a class="inline" href="../../packages/common/src/jwt.ts">jwt.ts</a> — <code>mint()</code>
+          (sign a token) and <code>verify()</code> (check one, with the algorithm <b>pinned</b>).</li>
+        <li><a class="inline" href="../../packages/common/src/index.ts">index.ts</a> — barrel export
+          so services <code>import { mint, verify } from "@sso/common"</code>.</li>
+        <li><a class="inline" href="../../packages/common/tests/keys.test.ts">keys.test.ts</a> +
+          <a class="inline" href="../../packages/common/tests/jwt.test.ts">jwt.test.ts</a> —
+          <b>20/20 green</b> (roundtrip, tamper, <code>alg:none</code>, HS256-confusion, expiry,
+          leeway, issuer/audience).</li>
+      </ul>
+    </div>
+    <div class="card accent">
+      <h3 style="margin-top:0">Config / infra / docs</h3>
+      <ul>
+        <li>Added <code>jose</code> (the JWT/JWKS library) to <code>packages/common</code>.</li>
+        <li>Reused the pinned constants from
+          <a class="inline" href="../../packages/common/src/config.ts">config.ts</a>
+          (P1.0): <code>ALG="RS256"</code>, 900s TTL, 60s leeway.</li>
+        <li>Spec: <a class="inline" href="../../specs/01-keys-jwt.md">specs/01-keys-jwt.md</a>.
+          Decisions: <a class="inline" href="../adr/0001-rs256-asymmetric-signing.md">ADR-0001</a>,
+          <a class="inline" href="../adr/0002-pin-rs256-alg.md">ADR-0002</a>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. MUST-KNOW CONCEPTS ============ -->
+<section id="concepts">
+  <h2>3 · Must-know concepts (top 4)</h2>
+  <p class="lead">The ideas to walk away with. Each card: definition → why it matters → analogy →
+    the pitfall.</p>
+
+  <div class="concept">
+    <h3><span class="num">1</span>Asymmetric signing (RS256)</h3>
+    <p class="label">What it is</p>
+    <p>A signing scheme with <b>two</b> keys: a secret <b>private key</b> that creates signatures, and
+    a public key that only <b>verifies</b> them. "RS256" = RSA signatures with SHA-256 hashing.</p>
+    <p class="label">Why it matters</p>
+    <p>The power to <i>create</i> tokens stays in exactly one place (the IdP). Every other service can
+    check tokens but can never mint them — so one hacked tenant can't forge logins for the others.</p>
+    <div class="analogy"><b>Analogy.</b> A tamper-proof rubber stamp. Only head office owns the stamp
+      (private key); branch offices can recognise a stamped document (public key) but can't stamp their
+      own.</div>
+    <div class="warnbox"><b>Pitfall.</b> Using a <i>symmetric</i> scheme (one shared secret, e.g.
+      HS256) instead. Then every verifier also holds the power to forge — one leak compromises
+      everyone. <span class="muted">(<a class="inline" href="../adr/0001-rs256-asymmetric-signing.md">ADR-0001</a>)</span></div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">2</span><code>alg</code> pinning</h3>
+    <p class="label">What it is</p>
+    <p>When verifying, we tell the library <b>exactly which algorithm to accept</b>:
+    <code>algorithms: ["RS256"]</code>. We never let the token's own header decide how it's checked.</p>
+    <p class="label">Why it matters</p>
+    <p>The two most famous JWT attacks both come from trusting the token's <code>alg</code> field.
+    Pinning makes both impossible — the verifier simply refuses anything that isn't an RS256 signature.</p>
+    <div class="analogy"><b>Analogy.</b> A bouncer who only accepts one specific kind of ID and ignores
+      whatever the card <i>claims</i> it is. A homemade card that says "trust me, no check needed" gets
+      turned away at the door.</div>
+    <div class="warnbox"><b>Pitfall.</b> Two classic forgeries: <b><code>alg:none</code></b> (attacker
+      sets algorithm to "none" and removes the signature) and <b>HS256 confusion</b> (attacker signs
+      with HS256 using the <i>public</i> key as the secret). Both succeed if you don't pin.
+      <span class="muted">(<a class="inline" href="../adr/0002-pin-rs256-alg.md">ADR-0002</a>)</span></div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">3</span>JWKS and the <code>kid</code></h3>
+    <p class="label">What it is</p>
+    <p><b>JWKS</b> (JSON Web Key Set) is a small public document listing the IdP's <b>public</b> keys.
+    Each key has a <b>kid</b> (key id). The token's header names a <code>kid</code> so a verifier knows
+    which public key to use.</p>
+    <p class="label">Why it matters</p>
+    <p>It lets tenants verify <b>offline</b> (no call back to the IdP) and lets the IdP <b>rotate</b>
+    keys later: publish a new key with a new <code>kid</code>, and old + new tokens both verify.</p>
+    <div class="analogy"><b>Analogy.</b> A public noticeboard of official signatures. Anyone can copy
+      the noticeboard to check a document, but copying a signature sample doesn't let you sign for the
+      office. The <code>kid</code> is the little reference number next to each sample.</div>
+    <div class="warnbox"><b>Pitfall.</b> Accidentally publishing the <b>private</b> parts of the key
+      (<code>d</code>, <code>p</code>, <code>q</code>…) in the JWKS. That hands attackers the power to
+      forge. Our <code>buildJwks()</code> exports the public half only — and a test asserts the private
+      fields are absent.</div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">4</span>Short lifetime + clock leeway</h3>
+    <p class="label">What it is</p>
+    <p>Each token carries an expiry (<code>exp</code>) 15 minutes out. Verifiers allow ±60 seconds of
+    <b>leeway</b> for clock differences between machines.</p>
+    <p class="label">Why it matters</p>
+    <p>A short life limits the damage if a token is stolen. The small leeway prevents honest tokens
+    from being rejected just because two servers' clocks differ by a few seconds.</p>
+    <div class="analogy"><b>Analogy.</b> A concert wristband that's only valid for tonight (short life),
+      and a door staff who won't quibble over a one-minute clock difference (leeway).</div>
+    <div class="warnbox"><b>Pitfall.</b> Zero leeway → random "token expired" failures across servers.
+      Too much leeway → expired tokens linger. 60s is the sweet spot for this MVP.</div>
+  </div>
+</section>
+
+<!-- ============ 4. HOW IT WORKS ============ -->
+<section id="how">
+  <h2>4 · How it works (the code, gently)</h2>
+  <p class="lead">Three short snippets carry the whole stage.</p>
+
+  <h3>Minting a token (IdP only)</h3>
+  <pre>return new SignJWT({ email, entitlements })          <span class="c">// custom claims (who + what they may access)</span>
+  .setProtectedHeader({ alg: "RS256", kid: keySet.kid }) <span class="c">// pin the alg; name which key</span>
+  .setIssuer(issuer).setAudience(audience)               <span class="c">// iss = the IdP, aud = the tenants</span>
+  .setSubject(sub).setIssuedAt(iat)
+  .setExpirationTime(iat + 900)                          <span class="c">// 15-minute life</span>
+  .sign(keySet.privateKey);                              <span class="c">// the seal — private key only</span></pre>
+  <p class="muted">Only the IdP holds <code>privateKey</code>, so only the IdP can produce a token that
+  will verify.</p>
+
+  <h3>Verifying a token (everyone else) — the safe part</h3>
+  <pre>const { payload } = await jwtVerify(token, publicKey, {
+  algorithms: ["RS256"],          <span class="c">// ★ the pin — rejects alg:none and HS256 confusion</span>
+  issuer, audience,               <span class="c">// must be OUR issuer and audience</span>
+  clockTolerance: 60,             <span class="c">// ±60s leeway; also enforces exp</span>
+});</pre>
+  <p class="muted">This single call checks the signature, the algorithm, the expiry, and the
+  issuer/audience. If anything is wrong it <b>throws</b> — later stages turn that throw into a
+  <span class="pill p401">401</span>.</p>
+
+  <h3>Publishing the public key (JWKS)</h3>
+  <pre>const jwk = await exportJWK(keySet.publicKey);          <span class="c">// public half only → { kty, n, e }</span>
+return { keys: [{ ...jwk, kid: keySet.kid, alg: "RS256", use: "sig" }] };</pre>
+  <p class="muted">The private fields are never exported here. The <code>kid</code> is an RFC 7638
+  <i>thumbprint</i> (a fingerprint of the public key), so it's stable and unique.</p>
+
+  <h3>What a real token looks like (decoded)</h3>
+  <div class="step"><div class="n">1</div><div class="b"><b>Header →</b>
+    <code>{ "alg": "RS256", "kid": "xc72x-…" }</code> — how it's signed + which key.</div></div>
+  <div class="step"><div class="n">2</div><div class="b"><b>Payload →</b>
+    <code>{ email, entitlements:{tenant_a:["member"]}, iss, aud, sub, iat, exp }</code> — the facts,
+    with <code>exp − iat = 900</code> seconds.</div></div>
+  <div class="step"><div class="n">3</div><div class="b"><b>Signature →</b> the RS256 seal over
+    header + payload. Change one character above and the signature no longer matches.</div></div>
+</section>
+
+<!-- ============ 5. WHY EACH DECISION ============ -->
+<section id="why">
+  <h2>5 · Why each decision exists</h2>
+  <p class="lead">Each choice answers a real "what if?".</p>
+  <table>
+    <tr><th>Decision</th><th>The worry it answers / the trade-off</th></tr>
+    <tr><td>RS256 (asymmetric), not HS256</td><td>"What if a tenant is hacked?" → it only has the
+      public key, so it can verify but never forge tokens for other tenants.</td></tr>
+    <tr><td>Pin <code>algorithms:["RS256"]</code></td><td>"What if an attacker edits the
+      <code>alg</code> header?" → ignored; <code>alg:none</code> and HS256-confusion are rejected.</td></tr>
+    <tr><td><code>kid</code> = public-key thumbprint</td><td>"How do verifiers pick the right key, and
+      how do we rotate keys later?" → a stable id in the header selects the key.</td></tr>
+    <tr><td>15-min expiry + 60s leeway</td><td>"What if a token is stolen / clocks drift?" → short life
+      caps the damage; small leeway avoids false rejections.</td></tr>
+    <tr><td>Throw on any failure</td><td>"How should callers react?" → one clear failure path that the
+      service layer maps to <span class="pill p401">401</span> — no partial trust.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6. TECHNICAL DECISIONS (ADRs) ============ -->
+<section id="adr">
+  <h2>6 · Technical decisions (ADRs)</h2>
+  <p class="lead">The Architecture Decision Records this stage implements.</p>
+  <table>
+    <tr><th>ADR</th><th>Decision</th><th>Why (plain)</th></tr>
+    <tr><td><a class="inline" href="../adr/0001-rs256-asymmetric-signing.md">0001</a></td>
+      <td>RS256 asymmetric signing</td>
+      <td>Private key signs at the IdP; tenants verify with the public key and can't forge.</td></tr>
+    <tr><td><a class="inline" href="../adr/0002-pin-rs256-alg.md">0002</a></td>
+      <td>Pin the verification algorithm to RS256</td>
+      <td>Kills the <code>alg:none</code> and RS256→HS256 key-confusion forgeries.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 7. TEST IT LOCALLY ============ -->
+<section id="test">
+  <h2>7 · How to test / check it locally</h2>
+  <pre>npm install
+npm test                 <span class="c"># vitest — 20/20 (config + keys + jwt)</span>
+npm test -- jwt          <span class="c"># run just the JWT criteria</span></pre>
+  <p>A green run proves every acceptance criterion in
+  <a class="inline" href="../../specs/01-keys-jwt.md">spec 01</a>: a minted token verifies and returns
+  its claims; a <b>tampered</b> token, an <b><code>alg:none</code></b> token, and an <b>HS256</b> token
+  are all rejected; an expired token fails while one inside the 60s leeway still passes; and the wrong
+  <code>iss</code> or <code>aud</code> is rejected. The JWKS test proves no private fields leak.</p>
+  <div class="note">Want to see a token by eye? Mint one and base64url-decode the first two dot-parts —
+    the header shows <code>alg:RS256</code> + <code>kid</code>, the payload shows the claims.</div>
+</section>
+
+<!-- ============ 8. GLOSSARY ============ -->
+<section id="glossary">
+  <h2>8 · Glossary (new terms this stage)</h2>
+  <dl class="glossary">
+    <dt>JWT (JSON Web Token)</dt><dd>A signed token of three dot-separated parts: header, payload, signature.</dd>
+    <dt>Claim</dt><dd>A single fact inside the payload, e.g. <code>sub</code>, <code>email</code>, <code>entitlements</code>.</dd>
+    <dt>Mint</dt><dd>To create and sign a token. Only the IdP mints.</dd>
+    <dt>RS256</dt><dd>RSA signature + SHA-256 hash. Asymmetric: private key signs, public key verifies.</dd>
+    <dt>Asymmetric / symmetric</dt><dd>Asymmetric = two different keys (sign vs verify). Symmetric = one shared secret for both.</dd>
+    <dt>Private key / public key</dt><dd>The secret signer (IdP only) and the freely-shared verifier.</dd>
+    <dt><code>alg</code> pinning</dt><dd>Telling the verifier the exact algorithm to accept, ignoring the token's own header.</dd>
+    <dt><code>alg:none</code></dt><dd>An attack token claiming "no signature"; rejected by pinning.</dd>
+    <dt>HS256 confusion</dt><dd>An attack that signs with HS256 using the public key as the secret; rejected by pinning.</dd>
+    <dt>JWKS (JSON Web Key Set)</dt><dd>A public document listing the IdP's public keys for verifiers.</dd>
+    <dt><code>kid</code> (key id)</dt><dd>An identifier (here an RFC 7638 thumbprint) naming which key signed a token.</dd>
+    <dt>Thumbprint</dt><dd>A stable fingerprint computed from a key's public fields.</dd>
+    <dt><code>iss</code> / <code>aud</code></dt><dd>Issuer (who made the token) and audience (who it's for).</dd>
+    <dt><code>exp</code> / <code>iat</code></dt><dd>Expiry time and issued-at time (Unix seconds).</dd>
+    <dt>Clock leeway</dt><dd>Allowed clock-skew tolerance (±60s) when checking time-based claims.</dd>
+  </dl>
+</section>
+
+<!-- ============ 9. SELF-QUIZ ============ -->
+<section id="quiz">
+  <h2>9 · Self-quiz</h2>
+  <p class="lead">Answer from memory before expanding.</p>
+
+  <details class="card"><summary>1. Which key signs a token, and which key verifies it?</summary>
+    <p class="muted">The <b>private</b> key (held only by the IdP) signs; the <b>public</b> key
+    verifies. Public can check but never forge.</p></details>
+
+  <details class="card"><summary>2. Name the two attacks that <code>alg</code> pinning prevents.</summary>
+    <p class="muted"><b><code>alg:none</code></b> (strip the signature) and <b>HS256 confusion</b>
+    (sign with HS256 using the public key as the HMAC secret). Pinning <code>["RS256"]</code> rejects
+    both.</p></details>
+
+  <details class="card"><summary>3. What is the <code>kid</code> for?</summary>
+    <p class="muted">It names <i>which</i> public key signed the token, so a verifier picks the right
+    one from the JWKS — and it enables key rotation.</p></details>
+
+  <details class="card"><summary>4. Why must the JWKS never contain <code>d</code>, <code>p</code>, or <code>q</code>?</summary>
+    <p class="muted">Those are <b>private</b> key fields. Publishing them hands attackers the power to
+    forge tokens. JWKS is public — public fields only (<code>n</code>, <code>e</code>).</p></details>
+
+  <details class="card"><summary>5. A token expired 30 seconds ago still verifies. Bug or correct?</summary>
+    <p class="muted">Correct — it's within the ±60s <b>clock leeway</b>. A token expired 120s ago is
+    rejected.</p></details>
+
+  <details class="card"><summary>6. <code>verify()</code> throws. What HTTP status will the service return later, and why?</summary>
+    <p class="muted"><span class="pill p401">401</span> — authentication failed: the token is
+    missing/invalid/expired, i.e. "I don't know who you are." (403 is for "I know you, but you can't be
+    here," which comes later from the entitlement check.)</p></details>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Source of truth: <a class="inline" href="../../specs/">specs/</a> ·
+  Design: <a class="inline" href="../ARCHITECTURE.md">docs/ARCHITECTURE.md</a> &amp;
+  <a class="inline" href="../adr/">the ADRs</a> ·
+  Master concept guide: <a class="inline" href="../../study.html">study.html</a> ·
+  Summary: <a class="inline" href="../summaries/P1.1-keys-jwt.md">../summaries/P1.1-keys-jwt.md</a>
+</footer>
+
+</body>
+</html>
