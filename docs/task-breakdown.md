@@ -19,7 +19,7 @@
 
 | Phase | Stages | Done |
 |---|---|---|
-| Phase 1 — study-guide architecture | P1.0 – P1.6 (7) | 1 / 7 |
+| Phase 1 — study-guide architecture | P1.0 – P1.6 (7) | 2 / 7 |
 | Phase 2 — full OIDC + browser SSO | P2.1 – P2.6 (6) | 0 / 6 |
 | Phase 3 — AWS (self-host + Cognito) | P3.0 – P3.8 (9) | 0 / 9 |
 
@@ -42,7 +42,7 @@ resource servers verify **offline** and enforce isolation. No browser redirects 
 - **Checkpoint:** `docker compose up -d` brings up Postgres w/ 3 DBs; `npm test` green; ARCHITECTURE reviewed.
 - **Note:** code committed (`a77b4dc` "P1.0 green"). ⏳ Remaining housekeeping: open PR `feat/00-infra` → `develop`.
 
-### [ ] P1.1 — Keys, JWT, JWKS, config pinning
+### [x] P1.1 — Keys, JWT, JWKS, config pinning
 - **Branch:** `feat/01-keys-jwt` · **Spec:** `specs/01-keys-jwt.md`
 - **Why:** trust = asymmetric signatures; clients verify offline; pinning defeats `alg:none`/HS256 confusion.
 - **Tests (red):** sign→verify roundtrip; **tampered token rejected**; **`alg:none` rejected**;
