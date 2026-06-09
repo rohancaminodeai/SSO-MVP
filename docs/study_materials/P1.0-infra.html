@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<!--
+  Per-task study guide for P1.0. Built from docs/study_materials/_template.html.
+  Canonical worked example: copy the template, fill every section, follow the four-part
+  pattern (Explain → Example → Reflect → Practice) and the plain-English rules.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>P1.0 — Infra &amp; Pinned Config · SSO MVP Study Guide</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2027; --panel2:#222c36; --ink:#e6edf3; --muted:#9aa7b4;
+    --accent:#6ea8fe; --accent2:#7ee787; --warn:#f0883e; --danger:#ff7b72; --line:#30363d;
+    --idp:#a371f7; --tenant:#3fb950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header.hero{padding:34px 24px 24px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#161b22,#0f1419)}
+  header.hero h1{margin:0 0 8px;font-size:26px}
+  header.hero p{margin:0;color:var(--muted)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 10px;border-radius:20px;background:var(--panel2);color:var(--accent);
+    border:1px solid var(--accent);margin-bottom:10px}
+  .layout{display:flex;max-width:1180px;margin:0 auto;gap:28px;padding:0 24px 80px}
+  nav{position:sticky;top:0;align-self:flex-start;padding-top:26px;min-width:210px;
+    max-height:100vh;overflow-y:auto;font-size:14px}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;border-left:2px solid transparent}
+  nav a:hover{color:var(--ink);background:var(--panel)}
+  nav .grp{margin:14px 0 4px;color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  main{flex:1;min-width:0;padding-top:18px}
+  section{padding:26px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;margin:0 0 6px}
+  h3{font-size:17px;margin:22px 0 8px;color:var(--accent2)}
+  .lead{color:var(--muted);margin:0 0 14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0}
+  .card.idp{border-left:4px solid var(--idp)}
+  .card.tenant{border-left:4px solid var(--tenant)}
+  .card.accent{border-left:4px solid var(--accent)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}.layout{flex-direction:column}nav{position:static;max-height:none}}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;background:#0b0f14;border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;font-size:13.5px;color:#c8d3de}
+  pre{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+    font-size:13.5px;line-height:1.55;margin:10px 0;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  pre .c{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--ink)}
+  .muted{color:var(--muted)}
+  .note{border-left:4px solid var(--accent);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .why{border-left:4px solid var(--accent2);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .warnbox{border-left:4px solid var(--danger);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  ul,ol{padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .p200{background:rgba(63,185,80,.18);color:var(--accent2)}
+  .p401{background:rgba(240,136,62,.18);color:var(--warn)}
+  .p403{background:rgba(255,123,114,.18);color:var(--danger)}
+  .step{display:flex;gap:14px;margin:10px 0}
+  .step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step .b{flex:1}
+  .step .b b{color:var(--ink)}
+  .concept{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:0 12px 12px 0;padding:14px 20px;margin:14px 0}
+  .concept h3{margin:0 0 8px;color:var(--ink)}
+  .concept .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;font-size:14px;margin-right:8px}
+  .concept .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 2px}
+  .analogy{background:rgba(110,168,254,.07);border:1px dashed var(--accent);border-radius:10px;padding:12px 16px;margin:12px 0}
+  .analogy b{color:var(--accent)}
+  .glossary dt{font-weight:700;color:var(--accent);margin-top:12px}
+  .glossary dd{margin:2px 0 0;color:var(--muted)}
+  a.inline{color:var(--accent);text-decoration:none}
+  a.inline:hover{text-decoration:underline}
+  footer{max-width:1180px;margin:0 auto;padding:24px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="tag">Study Guide · Phase 1 · P1.0</span>
+  <h1>P1.0 — Infra, Pinned Config &amp; the Env Loader</h1>
+  <p>This stage lays the project's foundation: the monorepo layout, a Postgres database per service,
+  and one small but security-critical file that holds the <b>pinned rules of our trust model</b> —
+  the values (signing algorithm, token lifetime, clock leeway) that must be defined in exactly one
+  place and never guessed anywhere else. You only need to read TypeScript loosely to follow along.</p>
+  <p class="muted" style="margin-top:8px">
+    Branch <code>feat/00-infra</code> · Spec <code>specs/00-infra.md</code> ·
+    Summary <a class="inline" href="../summaries/P1.0-infra.md">../summaries/P1.0-infra.md</a> ·
+    Status: <span class="pill p200">✓ done</span>
+  </p>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="grp">Start here</div>
+  <a href="#big-idea">1 · The big idea</a>
+  <a href="#what">2 · What we built</a>
+  <a href="#concepts">3 · Must-know concepts</a>
+  <div class="grp">The code</div>
+  <a href="#how">4 · How it works</a>
+  <div class="grp">Why &amp; how</div>
+  <a href="#why">5 · Why each decision</a>
+  <a href="#adr">6 · Technical decisions (ADRs)</a>
+  <div class="grp">Practice</div>
+  <a href="#test">7 · Test it locally</a>
+  <a href="#glossary">8 · Glossary</a>
+  <a href="#quiz">9 · Self-quiz</a>
+</nav>
+
+<main>
+
+<!-- ============ 1. BIG IDEA ============ -->
+<section id="big-idea">
+  <h2>1 · The big idea</h2>
+  <p class="lead">In one sentence: <b>define every security-critical constant and every environment
+  value once, in a single validated file, so nothing else in the codebase can hardcode or guess
+  them.</b></p>
+  <p>A Single Sign-On (SSO) system stands or falls on a few values being exactly right everywhere:
+  which signing algorithm we trust, how long a token lives, who the token is for. If those values
+  were copied around the code, one wrong copy would be a security hole. P1.0 puts them in
+  <code>packages/common/src/config.ts</code> and adds a small loader that <b>refuses to start</b> if
+  the environment is misconfigured.</p>
+  <div class="analogy">
+    <b>Analogy — the festival's rulebook.</b> Before a music festival opens, staff agree on one
+    rulebook: what a real wristband looks like, how long it is valid, which gate prints them. Every
+    guard works from that one rulebook. If each guard invented their own rules, fakes would slip
+    through. <code>config.ts</code> is that single rulebook for our tokens.
+  </div>
+</section>
+
+<!-- ============ 2. WHAT WE BUILT ============ -->
+<section id="what">
+  <h2>2 · What we built / changed</h2>
+  <p class="lead">The concrete artifacts produced in this stage.</p>
+  <div class="grid2">
+    <div class="card accent">
+      <h3 style="margin-top:0">Code &amp; tests</h3>
+      <ul>
+        <li><a class="inline" href="../../packages/common/src/config.ts">packages/common/src/config.ts</a>
+          — the pinned constants (<code>ALG="RS256"</code>, <code>ACCESS_TOKEN_TTL_SECONDS=900</code>,
+          <code>CLOCK_LEEWAY_SECONDS=60</code>, <code>TENANT_IDS</code>) plus
+          <code>loadConfig()</code>, a <code>zod</code> env loader.</li>
+        <li><a class="inline" href="../../packages/common/tests/config.test.ts">packages/common/tests/config.test.ts</a>
+          — tests written <b>first</b> (TDD): assert the pinned values, default-vs-provided env
+          parsing, and that bad input throws.</li>
+      </ul>
+    </div>
+    <div class="card accent">
+      <h3 style="margin-top:0">Config / infra / docs</h3>
+      <ul>
+        <li>Monorepo scaffold: npm workspaces, <code>tsconfig.base.json</code>,
+          <code>vitest.config.ts</code>, <code>.gitignore</code>, <code>.env.example</code>.</li>
+        <li><code>docker-compose.yml</code> — one Postgres with three databases
+          (<code>auth_db</code> / <code>tenant_a_db</code> / <code>tenant_b_db</code>) via
+          <code>db/init/01-create-databases.sql</code>.</li>
+        <li>Docs: <a class="inline" href="../ARCHITECTURE.md">ARCHITECTURE.md</a>, all 8 ADRs
+          (<code>docs/adr/0001</code>–<code>0008</code>), <code>PHASE3-AWS.md</code>,
+          <code>task-breakdown.md</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. MUST-KNOW CONCEPTS ============ -->
+<section id="concepts">
+  <h2>3 · Must-know concepts (top 5)</h2>
+  <p class="lead">The ideas to walk away with as an intermediate→senior engineer. Each card:
+    what it is → why it matters → analogy → the pitfall.</p>
+
+  <!-- Concept 1 -->
+  <div class="concept">
+    <h3><span class="num">1</span>Asymmetric signing (RS256) + algorithm pinning</h3>
+    <p class="label">What it is</p>
+    <p><b>Symmetric (HS256):</b> one shared secret both signs and verifies — anyone who can verify can
+      also forge. <b>Asymmetric (RS256):</b> a <i>private</i> key signs, a separate <i>public</i> key
+      only verifies. The IdP (Identity Provider) keeps the private key; tenants get the public key
+      only. "Pinning" means verification accepts <code>RS256</code> and nothing else.</p>
+    <p class="label">Why it matters</p>
+    <p>It means a hacked tenant can <i>check</i> tokens but never <i>forge</i> them — the power to mint
+      tokens stays in exactly one place.</p>
+    <div class="analogy"><b>Analogy — a wax seal.</b> Only the king's ring (private key) can stamp the
+      letter; anyone with a picture of the seal (public key) can confirm it is real, but cannot make
+      their own.</div>
+    <div class="warnbox"><b>Pitfall.</b> A forged token sets its header to <code>"alg":"none"</code>
+      ("no signature, trust me") or <code>HS256</code> (tricking the server into using the public key
+      as a shared password). Always verify with <code>algorithms:["RS256"]</code> — never trust the
+      algorithm written inside the token. <span class="muted">(ADR-0001, ADR-0002)</span></div>
+  </div>
+
+  <!-- Concept 2 -->
+  <div class="concept">
+    <h3><span class="num">2</span>Centralize authentication, keep authorization local</h3>
+    <p class="label">What it is</p>
+    <p><b>Authentication</b> = "Who are you?" — happens in <i>one</i> place (the IdP), the only service
+      that ever sees a password. <b>Authorization</b> = "What may you do <i>here</i>?" — each tenant
+      decides for itself using its own data.</p>
+    <p class="label">Why it matters</p>
+    <p>This split is the whole idea of SSO: log in once, then each app independently decides access.
+      One place to secure passwords; many places that simply trust a signed token.</p>
+    <div class="analogy"><b>Analogy — an office keycard.</b> You badge in once at the front desk
+      (authentication). After that, each door decides on its own whether your card opens it
+      (authorization).</div>
+    <div class="warnbox"><b>Pitfall.</b> Letting a tenant re-check passwords, or letting the IdP decide
+      per-tenant permissions, collapses the separation and spreads credentials everywhere.</div>
+  </div>
+
+  <!-- Concept 3 -->
+  <div class="concept">
+    <h3><span class="num">3</span>The 401 vs 403 taxonomy</h3>
+    <p class="label">What it is</p>
+    <p><span class="pill p401">401</span> = "I don't know who you are" (authentication failed — missing,
+      bad, or expired token). <span class="pill p403">403</span> = "I know who you are, but you can't
+      be here" (authorization failed — you lack the entitlement).</p>
+    <p class="label">Why it matters</p>
+    <p>The status code is a contract. Mixing them up confuses clients and hides real bugs. The first
+      failing check decides the code.</p>
+    <table>
+      <tr><th>Status</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><span class="pill p401">401</span></td><td>Unauthenticated</td><td>No <code>Authorization</code> header; expired token.</td></tr>
+      <tr><td><span class="pill p403">403</span></td><td>Unauthorized</td><td>Valid token, but its entitlements don't name this tenant.</td></tr>
+    </table>
+  </div>
+
+  <!-- Concept 4 -->
+  <div class="concept">
+    <h3><span class="num">4</span>Config as a security control + fail-fast validation</h3>
+    <p class="label">What it is</p>
+    <p>Token lifetime, clock leeway, and the algorithm are not "settings" — they are security
+      decisions. They live pinned in one validated file, and <code>loadConfig()</code> uses
+      <code>zod</code> to reject a malformed <code>ISSUER</code> URL or an unknown
+      <code>TENANT_ID</code> at boot.</p>
+    <p class="label">Why it matters</p>
+    <p>A misconfigured service <b>crashes immediately</b> with a clear error, instead of running and
+      silently minting or accepting bad tokens in production.</p>
+    <div class="analogy"><b>Analogy — a preflight checklist.</b> The plane refuses to leave the gate if
+      a critical switch is wrong, rather than discovering it mid-air.</div>
+    <div class="warnbox"><b>Pitfall.</b> Reading <code>process.env</code> ad-hoc across the codebase
+      with no validation lets a typo (<code>tenant_zz</code>) survive until a confusing runtime
+      failure far from its cause.</div>
+  </div>
+
+  <!-- Concept 5 -->
+  <div class="concept">
+    <h3><span class="num">5</span>Dependency injection / the factory pattern</h3>
+    <p class="label">What it is</p>
+    <p><code>loadConfig(env, options)</code> <i>receives</i> its environment as an argument instead of
+      reaching out to a global. The same shape scales to whole services later:
+      <code>createApp(deps)</code> takes its database and keys as arguments.</p>
+    <p class="label">Why it matters</p>
+    <p>Injected dependencies make code testable: a test passes a fake env (or a throwaway database and
+      an ephemeral keypair) and exercises the real logic in milliseconds, no Docker needed.</p>
+    <div class="analogy"><b>Analogy — a coffee machine with a water inlet.</b> You can plug in tap water
+      or a test bottle. A machine welded to the city pipe can only be tested by flooding the building.</div>
+    <div class="warnbox"><b>Pitfall.</b> Hardcoding <code>process.env</code> / real DB connections deep
+      inside functions makes them nearly impossible to unit-test.</div>
+  </div>
+</section>
+
+<!-- ============ 4. HOW IT WORKS ============ -->
+<section id="how">
+  <h2>4 · How it works (the code, gently)</h2>
+  <p class="lead">The two pieces that matter: the pinned constants, and the loader that validates the
+    environment.</p>
+
+  <h3>The pinned constants — the single source of truth</h3>
+  <pre><span class="c">// packages/common/src/config.ts — no other file may hardcode these.</span>
+export const ALG = "RS256";                  <span class="c">// signing algorithm (asymmetric)</span>
+export const ACCESS_TOKEN_TTL_SECONDS = 900; <span class="c">// tokens live 15 minutes</span>
+export const CLOCK_LEEWAY_SECONDS = 60;      <span class="c">// tolerate ±60s clock difference</span>
+export const TENANT_IDS = ["tenant_a", "tenant_b"]; <span class="c">// the tenants we know</span></pre>
+  <p class="muted">Short token life limits the damage if a token is stolen; the leeway absorbs small
+    clock differences between the IdP and the tenants.</p>
+
+  <h3>The env loader — read, validate, fail fast</h3>
+  <pre>const envSchema = z.object({
+  ISSUER:    z.string().url().default(ISSUER_DEFAULT),   <span class="c">// must be a URL</span>
+  AUDIENCE:  z.string().min(1).default(AUDIENCE_DEFAULT),
+  TENANT_ID: z.enum(TENANT_IDS).optional(),              <span class="c">// only known tenants</span>
+});
+
+export function loadConfig(env = process.env, options = {}) {
+  const parsed = envSchema.parse(env);   <span class="c">// ⚠ throws on a bad ISSUER / unknown TENANT_ID</span>
+  const dbUrlKey = options.dbUrlKey ?? "AUTH_DATABASE_URL"; <span class="c">// each service picks its DB</span>
+  return { issuer: parsed.ISSUER, audience: parsed.AUDIENCE,
+           databaseUrl: env[dbUrlKey], tenantId: parsed.TENANT_ID };
+}</pre>
+  <p class="muted">A tenant-service instance calls <code>loadConfig(process.env, {dbUrlKey:
+    "TENANT_B_DATABASE_URL"})</code> — same loader, different database. That <code>options</code>
+    argument is the factory pattern in miniature.</p>
+</section>
+
+<!-- ============ 5. WHY EACH DECISION ============ -->
+<section id="why">
+  <h2>5 · Why each decision exists</h2>
+  <p class="lead">Each choice answers a real-world "what if?".</p>
+  <table>
+    <tr><th>Decision</th><th>The worry it answers / the trade-off</th></tr>
+    <tr><td><b>One pinned config file</b></td><td>"What if a constant is wrong in one place?" → There is only one place, so it can't drift.</td></tr>
+    <tr><td><b>Pin <code>alg</code> to RS256</b></td><td>"What if an attacker changes the token's algorithm?" → We accept only RS256, killing <code>alg:none</code> / HS256 confusion.</td></tr>
+    <tr><td><b>Short 15-min token TTL</b></td><td>"What if a token is stolen?" → It expires fast, shrinking the damage window. Trade-off: more frequent re-issuing.</td></tr>
+    <tr><td><b>±60s clock leeway</b></td><td>"What if two servers' clocks differ slightly?" → Tolerate 60s so valid tokens aren't wrongly rejected.</td></tr>
+    <tr><td><b>Fail-fast env validation</b></td><td>"What if the environment is misconfigured?" → Crash loudly at boot instead of misbehaving later.</td></tr>
+    <tr><td><b><code>loadConfig(env)</code> takes an argument</b></td><td>"How do we test config without real env?" → Inject a fake env; test in milliseconds.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6. ADRs ============ -->
+<section id="adr">
+  <h2>6 · Technical decisions (ADRs)</h2>
+  <p class="lead">The Architecture Decision Records this stage sets up. (An ADR is a short note:
+    "we decided X, because Y, trade-off Z.")</p>
+  <table>
+    <tr><th>ADR</th><th>Decision</th><th>Why (plain)</th></tr>
+    <tr><td><a class="inline" href="../adr/0001-rs256-asymmetric-signing.md">0001</a></td><td>RS256 asymmetric signing</td><td>Private key signs at the IdP; tenants verify with the public key.</td></tr>
+    <tr><td><a class="inline" href="../adr/0002-pin-rs256-alg.md">0002</a></td><td>Pin the algorithm to RS256</td><td>Defeats <code>alg:none</code> / HS256 key-confusion forgery.</td></tr>
+    <tr><td><a class="inline" href="../adr/0003-entitlements-in-token.md">0003</a></td><td>Entitlements inside the token</td><td>Tenants learn permissions from the token, no extra IdP lookup.</td></tr>
+    <tr><td><a class="inline" href="../adr/0004-offline-verification.md">0004</a></td><td>Offline verification (JWKS)</td><td>Tenants cache public keys and verify locally — fast and resilient.</td></tr>
+  </table>
+  <div class="note">ADRs 0003 and 0004 are <i>set up</i> here (the constants they need) but are fully
+    exercised in later stages (auth-service and tenant-service).</div>
+</section>
+
+<!-- ============ 7. TEST IT LOCALLY ============ -->
+<section id="test">
+  <h2>7 · How to test / check it locally</h2>
+  <pre>npm install
+npm test                 <span class="c"># vitest — pinned constants + env loader (the P1.0 gate)</span>
+npx tsc --noEmit         <span class="c"># type-check passes, no build errors</span>
+docker compose up -d     <span class="c"># starts Postgres with the 3 databases</span></pre>
+  <p>A green run proves the spec's acceptance criteria: the constants are exactly
+    <code>RS256</code> / <code>900</code> / <code>60</code>; defaults load when no env is set; provided
+    values parse correctly; and a bad <code>ISSUER</code> URL or unknown <code>TENANT_ID</code> throws.</p>
+</section>
+
+<!-- ============ 8. GLOSSARY ============ -->
+<section id="glossary">
+  <h2>8 · Glossary (new terms this stage)</h2>
+  <dl class="glossary">
+    <dt>IdP (Identity Provider)</dt><dd>The central login server; the only service that checks passwords and signs tokens.</dd>
+    <dt>Tenant</dt><dd>One app/workspace with its own database. Trusts signed tokens; never checks passwords.</dd>
+    <dt>JWT (JSON Web Token)</dt><dd>A small signed token carrying facts ("claims") about the user.</dd>
+    <dt>RS256</dt><dd>Asymmetric signing: a private key signs, a public key verifies.</dd>
+    <dt>JWKS (JSON Web Key Set)</dt><dd>A public page listing the IdP's public keys so tenants can verify offline.</dd>
+    <dt>Entitlement</dt><dd>A grant saying "this identity may access this tenant."</dd>
+    <dt>Clock leeway</dt><dd>Allowed time difference (here ±60s) when checking token expiry across machines.</dd>
+    <dt>TTL (time to live)</dt><dd>How long a token stays valid (here 900 seconds = 15 minutes).</dd>
+    <dt>Factory pattern</dt><dd>Building a thing via a function that takes its dependencies as arguments, so tests can swap them.</dd>
+    <dt>zod</dt><dd>A TypeScript library that validates data against a schema and throws on bad input.</dd>
+  </dl>
+</section>
+
+<!-- ============ 9. SELF-QUIZ ============ -->
+<section id="quiz">
+  <h2>9 · Self-quiz</h2>
+  <p class="lead">Answer from memory before expanding. If you can do these, you understand P1.0.</p>
+
+  <details class="card"><summary>1. Why does a tenant get the public key but never the private key?</summary>
+    <p class="muted">So a compromised tenant can <i>verify</i> tokens but never <i>forge</i> them. The
+      power to mint tokens stays solely at the IdP. That is the point of RS256.</p></details>
+
+  <details class="card"><summary>2. What attack does <code>algorithms:["RS256"]</code> stop, and how?</summary>
+    <p class="muted">It rejects tokens that set <code>alg:none</code> (no signature) or <code>HS256</code>
+      (key-confusion, using the public key as a shared secret). By accepting only RS256, both are dead
+      on arrival.</p></details>
+
+  <details class="card"><summary>3. Give one example each of a 401 case and a 403 case.</summary>
+    <p class="muted"><span class="pill p401">401</span>: no <code>Authorization</code> header, or an
+      expired/forged token. <span class="pill p403">403</span>: a valid token whose entitlements don't
+      name this tenant.</p></details>
+
+  <details class="card"><summary>4. Why is it better for a service to crash at boot on bad config?</summary>
+    <p class="muted">A loud, immediate failure points straight at the misconfiguration. A service that
+      keeps running might silently mint or accept bad tokens, surfacing as a confusing failure later,
+      far from the cause.</p></details>
+
+  <details class="card"><summary>5. Why does <code>loadConfig</code> take <code>env</code> as a parameter instead of reading globals?</summary>
+    <p class="muted">So tests can inject a fake environment and exercise the real logic in milliseconds.
+      It is the same dependency-injection shape that whole services use later via
+      <code>createApp(deps)</code>.</p></details>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Source of truth: <a class="inline" href="../../specs/">specs/00-infra.md</a> ·
+  Design: <a class="inline" href="../ARCHITECTURE.md">docs/ARCHITECTURE.md</a> &amp;
+  <a class="inline" href="../adr/">the ADRs</a> ·
+  Master concept guide: <a class="inline" href="../../study.html">study.html</a> ·
+  Summary: <a class="inline" href="../summaries/P1.0-infra.md">../summaries/P1.0-infra.md</a>
+</footer>
+
+</body>
+</html>

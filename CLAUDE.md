@@ -132,3 +132,24 @@ npm run dev                  # run services locally with tsx
 - Keep `docs/ARCHITECTURE.md` and the relevant `specs/NN-*.md` in sync with code changes.
 - New decision? Add an ADR (`docs/adr/NNNN-title.md`: decision · why · trade-off).
 - Stay inside the current stage. Finish its SDD→TDD cycle and pause before the next.
+
+## After every task is done (required deliverables)
+
+When a stage's checkpoint is green, **before pausing for review**, always produce two artifacts:
+
+1. **Summary note** — `docs/summaries/<task>.md` (named after the stage, e.g. `P1.0-infra.md`).
+   A short markdown summary covering: what we added/changed · the feature · why it matters ·
+   how to test locally · the **top 3–5 must-know concepts** · technical decisions (ADRs).
+2. **Study material** — `docs/study_materials/<task>.html`. Build it by **copying the skeleton
+   [`docs/study_materials/_template.html`](docs/study_materials/_template.html)** and filling every
+   section — do **not** invent your own structure. The template (and its top authoring-guide comment)
+   is the spec; the root `study.html` is the gold-standard reference and
+   [`docs/study_materials/P1.0-infra.html`](docs/study_materials/P1.0-infra.html) is the worked example.
+   - **Write in simple English** so it can teach other engineers: short sentences, active voice,
+     define every acronym on first use, concrete example before the abstract rule.
+   - Follow the four-part pattern: **Explain → Example → Reflect → Practice** (the template's 9
+     sections), and use its teaching devices (analogy per hard concept, why-box per decision,
+     warn-box per pitfall, worked code with comments, glossary, collapsible self-quiz).
+   - The **top 3–5 must-know concepts** each get a card: definition → why → analogy → pitfall (+ADR).
+
+One file each per task. Do not skip these — they are part of the stage's definition of done.
