@@ -19,7 +19,7 @@
 
 | Phase | Stages | Done |
 |---|---|---|
-| Phase 1 — study-guide architecture | P1.0 – P1.6 (7) | 2 / 7 |
+| Phase 1 — study-guide architecture | P1.0 – P1.6 (7) | 3 / 7 |
 | Phase 2 — full OIDC + browser SSO | P2.1 – P2.6 (6) | 0 / 6 |
 | Phase 3 — AWS (self-host + Cognito) | P3.0 – P3.8 (9) | 0 / 9 |
 
@@ -52,7 +52,7 @@ resource servers verify **offline** and enforce isolation. No browser redirects 
 - **What matters:** `algorithms:["RS256"]` only; private key never leaves the IdP; leeway.
 - **ADRs:** [0001 RS256](adr/0001-rs256-asymmetric-signing.md), [0002 pin RS256](adr/0002-pin-rs256-alg.md) (already authored — confirm vs code).
 
-### [ ] P1.2 — auth-service: login, signup, jwks
+### [x] P1.2 — auth-service: login, signup, jwks
 - **Branch:** `feat/02-auth-service` · **Spec:** `specs/02-auth-service.md`
 - **Why:** the one place passwords are checked; mints entitlement-carrying tokens.
 - **Tests (red):** login success mints valid JWT with entitlements; **wrong password & unknown email
