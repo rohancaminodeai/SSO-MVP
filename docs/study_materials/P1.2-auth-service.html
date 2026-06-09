@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>P1.2 — auth-service: login, signup, JWKS · SSO MVP Study Guide</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2027; --panel2:#222c36; --ink:#e6edf3; --muted:#9aa7b4;
+    --accent:#6ea8fe; --accent2:#7ee787; --warn:#f0883e; --danger:#ff7b72; --line:#30363d;
+    --idp:#a371f7; --tenant:#3fb950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header.hero{padding:34px 24px 24px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#161b22,#0f1419)}
+  header.hero h1{margin:0 0 8px;font-size:26px}
+  header.hero p{margin:0;color:var(--muted)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 10px;border-radius:20px;background:var(--panel2);color:var(--accent);
+    border:1px solid var(--accent);margin-bottom:10px}
+  .layout{display:flex;max-width:1180px;margin:0 auto;gap:28px;padding:0 24px 80px}
+  nav{position:sticky;top:0;align-self:flex-start;padding-top:26px;min-width:210px;
+    max-height:100vh;overflow-y:auto;font-size:14px}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;border-left:2px solid transparent}
+  nav a:hover{color:var(--ink);background:var(--panel)}
+  nav .grp{margin:14px 0 4px;color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  main{flex:1;min-width:0;padding-top:18px}
+  section{padding:26px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;margin:0 0 6px}
+  h3{font-size:17px;margin:22px 0 8px;color:var(--accent2)}
+  .lead{color:var(--muted);margin:0 0 14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0}
+  .card.idp{border-left:4px solid var(--idp)}
+  .card.tenant{border-left:4px solid var(--tenant)}
+  .card.accent{border-left:4px solid var(--accent)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}.layout{flex-direction:column}nav{position:static;max-height:none}}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;background:#0b0f14;border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;font-size:13.5px;color:#c8d3de}
+  pre{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+    font-size:13.5px;line-height:1.55;margin:10px 0;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  pre .c{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--ink)}
+  .muted{color:var(--muted)}
+  .note{border-left:4px solid var(--accent);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .why{border-left:4px solid var(--accent2);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .warnbox{border-left:4px solid var(--danger);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  ul,ol{padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .p200{background:rgba(63,185,80,.18);color:var(--accent2)}
+  .p401{background:rgba(240,136,62,.18);color:var(--warn)}
+  .p403{background:rgba(255,123,114,.18);color:var(--danger)}
+  .step{display:flex;gap:14px;margin:10px 0}
+  .step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step .b{flex:1}
+  .step .b b{color:var(--ink)}
+  .concept{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:0 12px 12px 0;padding:14px 20px;margin:14px 0}
+  .concept h3{margin:0 0 8px;color:var(--ink)}
+  .concept .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;font-size:14px;margin-right:8px}
+  .concept .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .analogy{background:rgba(110,168,254,.07);border:1px dashed var(--accent);border-radius:10px;padding:12px 16px;margin:12px 0}
+  .analogy b{color:var(--accent)}
+  .glossary dt{font-weight:700;color:var(--accent);margin-top:12px}
+  .glossary dd{margin:2px 0 0;color:var(--muted)}
+  a.inline{color:var(--accent);text-decoration:none}
+  a.inline:hover{text-decoration:underline}
+  footer{max-width:1180px;margin:0 auto;padding:24px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="tag">Study Guide · Phase 1 · P1.2</span>
+  <h1>P1.2 — auth-service: login, signup &amp; JWKS</h1>
+  <p>This stage builds the <b>Identity Provider (IdP)</b> — the one service that ever sees a password.
+  It checks a password, looks up what the user is allowed to do, and <b>mints</b> a signed token that
+  carries those permissions. If P1.1 made a token <i>trustworthy</i>, P1.2 is where a real person logs
+  in and actually gets one. No prior auth experience needed — every idea is in plain English.</p>
+  <p class="muted" style="margin-top:8px">
+    Branch <code>feat/02-auth-service</code> · Spec <code>specs/02-auth-service.md</code> ·
+    Summary <a class="inline" href="../summaries/P1.2-auth-service.md">../summaries/P1.2-auth-service.md</a> ·
+    Status: <span class="pill p200">✓ done</span>
+  </p>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="grp">Start here</div>
+  <a href="#big-idea">1 · The big idea</a>
+  <a href="#what">2 · What we built</a>
+  <a href="#concepts">3 · Must-know concepts</a>
+  <div class="grp">The code</div>
+  <a href="#how">4 · How it works</a>
+  <div class="grp">Why &amp; how</div>
+  <a href="#why">5 · Why each decision</a>
+  <a href="#adr">6 · Technical decisions (ADRs)</a>
+  <div class="grp">Practice</div>
+  <a href="#test">7 · Test it locally</a>
+  <a href="#glossary">8 · Glossary</a>
+  <a href="#quiz">9 · Self-quiz</a>
+</nav>
+
+<main>
+
+<!-- ============ 1. BIG IDEA ============ -->
+<section id="big-idea">
+  <h2>1 · The big idea</h2>
+  <p class="lead"><b>One service — and only one — checks passwords. When the password is right, it hands
+  back a signed token that says who you are and what you may access.</b></p>
+  <p>This is the heart of the project's one rule: <b>centralize authentication, keep authorization
+  local</b>. "Authentication" answers <i>who are you?</i> and happens in exactly one place: the IdP
+  (our <code>auth-service</code>, port 8000). Every other service later trusts the <i>token</i>, never
+  a password — most of the system never even sees one.</p>
+  <p>At login, the IdP does three things: (1) verify the password against a stored <b>bcrypt</b> hash;
+  (2) look up the user's <b>entitlements</b> (which tenants they may enter); (3) <b>mint</b> a token
+  (using the P1.1 signing key) that carries those entitlements inside it. The token is the user's
+  portable proof — they present it to any tenant.</p>
+  <div class="analogy">
+    <b>Analogy.</b> Airport check-in. You show your passport <b>once</b> at a single desk (the IdP).
+    They print a <b>boarding pass</b> (the token) listing your name and exactly which gates you may
+    enter (entitlements). At each gate, staff just read the boarding pass — they never re-check your
+    passport. Lose the desk and you can't fly; but once you hold the pass, the gates are quick.
+  </div>
+</section>
+
+<!-- ============ 2. WHAT WE BUILT ============ -->
+<section id="what">
+  <h2>2 · What we built / changed</h2>
+  <p class="lead">A new service (the IdP) built with the factory pattern, plus the password primitive
+  it needs and a Postgres-backed store.</p>
+  <div class="grid2">
+    <div class="card idp">
+      <h3 style="margin-top:0">The IdP routes &amp; factory</h3>
+      <ul>
+        <li><a class="inline" href="../../packages/auth-service/src/app.ts">app.ts</a> —
+          <code>createApp(deps)</code> wires the routes over injected dependencies (store, keys,
+          issuer/audience). No globals → fast tests.</li>
+        <li><a class="inline" href="../../packages/auth-service/src/routes/login.ts">login.ts</a> —
+          <code>POST /login</code>: validate, one bcrypt compare, mint a token.</li>
+        <li><a class="inline" href="../../packages/auth-service/src/routes/signup.ts">signup.ts</a> —
+          <code>POST /signup</code>: create an identity + grant the default entitlement.</li>
+        <li><a class="inline" href="../../packages/auth-service/src/routes/jwks.ts">jwks.ts</a> —
+          <code>GET /.well-known/jwks.json</code>: serve the public key over HTTP.</li>
+      </ul>
+    </div>
+    <div class="card accent">
+      <h3 style="margin-top:0">Supporting code, store &amp; tests</h3>
+      <ul>
+        <li><a class="inline" href="../../packages/common/src/password.ts">password.ts</a> —
+          <code>hashPassword</code> / <code>verifyPassword</code> (bcrypt) + a precomputed
+          <code>DUMMY_HASH</code>.</li>
+        <li><a class="inline" href="../../packages/auth-service/src/db/">db/</a> +
+          <a class="inline" href="../../packages/auth-service/src/server.ts">server.ts</a> —
+          <code>PgAuthStore</code>, idempotent <code>schema.sql</code>, seed (alice, bob), real wiring.</li>
+        <li>Tests: <code>password</code> (2) + <code>login</code> (5) + <code>signup</code> (3) +
+          <code>jwks</code> (3) — <b>33/33 green</b> (13 new + 20 from P1.1).</li>
+        <li>Decisions: <a class="inline" href="../adr/0003-entitlements-in-token.md">ADR-0003</a>,
+          <a class="inline" href="../adr/0006-no-user-enumeration.md">ADR-0006</a>,
+          <a class="inline" href="../adr/0009-signup-default-entitlement.md">ADR-0009</a>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. MUST-KNOW CONCEPTS ============ -->
+<section id="concepts">
+  <h2>3 · Must-know concepts (top 5)</h2>
+  <p class="lead">The ideas to walk away with. Each card: definition → why it matters → analogy →
+    the pitfall.</p>
+
+  <div class="concept">
+    <h3><span class="num">1</span>The IdP is the only password checker</h3>
+    <p class="label">What it is</p>
+    <p>Authentication is centralized in one service. <code>auth-service</code> owns <code>auth_db</code>
+    (identities + entitlements) and the private signing key. No other service stores or checks a
+    password.</p>
+    <p class="label">Why it matters</p>
+    <p>Passwords are the most dangerous secret in the system. Keeping them in one place means one place
+    to harden, audit, and reason about — and adding a third, fourth, or tenth app needs no new password
+    handling at all.</p>
+    <div class="analogy"><b>Analogy.</b> A building with a single security desk at the entrance. You
+      prove who you are once; every interior door just reads your badge.</div>
+    <div class="warnbox"><b>Pitfall.</b> Letting a second service "just also check passwords." Now there
+      are two places to leak credentials and two login behaviours to keep consistent. Authentication
+      must stay in exactly one service.</div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">2</span>Constant-time login (no user enumeration)</h3>
+    <p class="label">What it is</p>
+    <p><b>Enumeration</b> = an attacker figuring out which emails are registered by watching how the
+    server responds. We prevent it: wrong password and unknown email return the <b>same body</b>
+    (<span class="pill p401">401</span> <code>invalid_credentials</code>) in the <b>same time</b>.</p>
+    <p class="label">Why it matters</p>
+    <p>If "unknown email" answered faster (because no hash check ran) or differently, an attacker could
+    harvest a list of real accounts to target. We always run <b>one</b> bcrypt compare — against
+    <code>DUMMY_HASH</code> when the email is unknown — so both paths cost the same.</p>
+    <div class="analogy"><b>Analogy.</b> A doorman who takes exactly the same amount of time to turn
+      everyone away, whether the name is on the list or not — so loiterers learn nothing from how long
+      it took.</div>
+    <div class="warnbox"><b>Pitfall.</b> <code>if (!user) return 401</code> <i>before</i> hashing. That
+      early return is fast, and the timing gap silently leaks which emails exist.
+      <span class="muted">(<a class="inline" href="../adr/0006-no-user-enumeration.md">ADR-0006</a>)</span></div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">3</span>Entitlements are minted into the token at login</h3>
+    <p class="label">What it is</p>
+    <p>The IdP reads the user's grants (<code>getEntitlements(sub)</code>) and bakes them into the signed
+    token as <code>entitlements: { "tenant_a": ["member"], ... }</code>. Authorization data travels
+    <i>inside</i> the token.</p>
+    <p class="label">Why it matters</p>
+    <p>Because the token is signed, the entitlements can't be tampered with — and tenants can authorize
+    a request by reading the token, with <b>no call back</b> to the IdP. The IdP isn't a per-request
+    bottleneck.</p>
+    <div class="analogy"><b>Analogy.</b> The gates printed on your boarding pass. The gate agent reads
+      the pass; they don't phone check-in to ask whether you're allowed.</div>
+    <div class="warnbox"><b>Pitfall.</b> Entitlements are only as fresh as the token. Revoke a grant and
+      the old token still works until it expires — which is why tokens are short-lived (15 min).
+      <span class="muted">(<a class="inline" href="../adr/0003-entitlements-in-token.md">ADR-0003</a>)</span></div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">4</span>The factory pattern makes the IdP testable</h3>
+    <p class="label">What it is</p>
+    <p><code>createApp(deps)</code> takes its dependencies — the data store, the signing keys, the
+    issuer/audience — as <b>arguments</b>, instead of reaching for global state. Production builds them
+    from Postgres + PEM files; tests pass an in-memory store and an ephemeral keypair.</p>
+    <p class="label">Why it matters</p>
+    <p>The whole login/signup/JWKS surface can be tested in milliseconds with <b>no Postgres and no
+    Docker</b>. Tests stay fast, isolated, and deterministic.</p>
+    <div class="analogy"><b>Analogy.</b> An appliance with a power plug instead of a hard-wired cable.
+      In the lab you plug it into a test bench; at home it plugs into the wall. Same appliance, swappable
+      source.</div>
+    <div class="warnbox"><b>Pitfall.</b> Importing a global DB connection inside route code. Then a test
+      can't run without a real database, and two tests can pollute each other's data.</div>
+  </div>
+
+  <div class="concept">
+    <h3><span class="num">5</span>Signup creates an identity and a default grant — but no token</h3>
+    <p class="label">What it is</p>
+    <p><code>POST /signup</code> makes the central identity, hashes the password, and grants the default
+    entitlement <code>tenant_a:[member]</code>. It returns <code>{ sub, email }</code> — the user logs
+    in separately to get a token.</p>
+    <p class="label">Why it matters</p>
+    <p>A brand-new user is now <i>entitled</i> to tenant_a but has <b>no local account row</b> in that
+    tenant yet. That exact state — "allowed in, but not provisioned here" — is the setup for Flow C
+    (just-in-time provisioning) in P1.4.</p>
+    <div class="analogy"><b>Analogy.</b> Being added to the company directory and granted building
+      access, before HR has created your desk and locker in a specific office. You may enter; your local
+      spot gets made on first arrival.</div>
+    <div class="warnbox"><b>Pitfall.</b> This auto-grant is a study-MVP convenience, not production
+      practice — real systems gate entitlement behind an admin/approval step.
+      <span class="muted">(<a class="inline" href="../adr/0009-signup-default-entitlement.md">ADR-0009</a>)</span></div>
+  </div>
+</section>
+
+<!-- ============ 4. HOW IT WORKS ============ -->
+<section id="how">
+  <h2>4 · How it works (the code, gently)</h2>
+  <p class="lead">Three short handlers carry the whole stage. Each starts by validating its input with
+  <b>zod</b> at the very edge, before any database or crypto work.</p>
+
+  <h3>Login — constant-time check, then mint</h3>
+  <pre>const identity = await store.findIdentityByEmail(email);            <span class="c">// may be null</span>
+<span class="c">// ★ Always run ONE bcrypt compare. Unknown email → compare vs DUMMY_HASH,</span>
+<span class="c">//   so the request still spends hash time. No timing leak (ADR-0006).</span>
+const ok = await verifyPassword(password, identity?.passwordHash ?? DUMMY_HASH);
+if (!identity || !ok) return res.status(401).json({ error: "invalid_credentials" });
+
+const entitlements = await store.getEntitlements(identity.sub);     <span class="c">// { tenant_a:[...], ... }</span>
+const access_token = await mint(keySet, { sub, email, entitlements, issuer, audience });
+return res.json({ access_token, token_type: "Bearer", expires_in: 900 });</pre>
+  <p class="muted">Wrong password and unknown email reach the <i>same</i> line and return the
+  <i>same</i> <span class="pill p401">401</span> body. On success the token carries the entitlements,
+  signed.</p>
+
+  <h3>Signup — no duplicates, hash, grant the default</h3>
+  <pre>if (await store.findIdentityByEmail(email)) return res.status(409).json({ error: "email_taken" });
+const sub = newSub();                                <span class="c">// e.g. "u_" + uuid (injectable for tests)</span>
+const passwordHash = await hashPassword(password);   <span class="c">// bcrypt, cost 12</span>
+await store.createIdentity({ sub, email, passwordHash, name });
+await store.grantEntitlement(sub, "tenant_a", ["member"]);  <span class="c">// default grant (ADR-0009)</span>
+return res.status(201).json({ sub, email });         <span class="c">// no token — log in separately</span></pre>
+  <p class="muted">Email is lowercased first, so <code>ALICE@…</code> and <code>alice@…</code> are the
+  same account (the <span class="pill p403" style="background:rgba(255,123,114,.18)">409</span> check is
+  case-insensitive).</p>
+
+  <h3>JWKS — publish the public key over HTTP</h3>
+  <pre>const jwks = await buildJwks(keySet);                <span class="c">// public half only: { kty, n, e, kid, alg, use }</span>
+res.set("Cache-Control", "public, max-age=300");     <span class="c">// tenants may cache for 5 minutes</span>
+return res.status(200).json(jwks);</pre>
+  <p class="muted">This is the HTTP front for the P1.1 <code>buildJwks()</code>. Tenants fetch it once,
+  cache it, and verify tokens <b>offline</b> (wired up in P1.3). Private fields are never included.</p>
+
+  <h3>A login request, end to end</h3>
+  <div class="step"><div class="n">1</div><div class="b"><b>Client →</b>
+    <code>POST /login { email, password }</code>. Malformed body → <span class="pill p401" style="background:rgba(240,136,62,.18)">400</span> before any work.</div></div>
+  <div class="step"><div class="n">2</div><div class="b"><b>IdP checks the password →</b> one bcrypt
+    compare. Fail → <span class="pill p401">401</span> (identical for wrong-pw and unknown-email).</div></div>
+  <div class="step"><div class="n">3</div><div class="b"><b>IdP looks up entitlements →</b>
+    <code>{ tenant_a:["member"], tenant_b:["member"] }</code> for bob.</div></div>
+  <div class="step"><div class="n">4</div><div class="b"><b>IdP mints &amp; returns →</b>
+    <span class="pill p200">200</span> with <code>{ access_token, token_type:"Bearer", expires_in:900 }</code>.
+    The token's payload carries those entitlements, signed.</div></div>
+</section>
+
+<!-- ============ 5. WHY EACH DECISION ============ -->
+<section id="why">
+  <h2>5 · Why each decision exists</h2>
+  <p class="lead">Each choice answers a real "what if?".</p>
+  <table>
+    <tr><th>Decision</th><th>The worry it answers / the trade-off</th></tr>
+    <tr><td>Only the IdP checks passwords</td><td>"Where do credentials live?" → one hardened service;
+      tenants never see a password, so adding apps adds no password surface.</td></tr>
+    <tr><td>Always run one bcrypt compare (DUMMY_HASH)</td><td>"What if unknown emails answer faster?" →
+      they don't; both failure paths cost the same time and return the same body.</td></tr>
+    <tr><td>Identical <code>401 invalid_credentials</code></td><td>"What can the error tell an attacker?"
+      → nothing about whether the email exists or which half was wrong.</td></tr>
+    <tr><td>Entitlements minted into the token</td><td>"How do tenants authorize without calling us
+      every request?" → they read the signed token; the IdP isn't a bottleneck (15-min freshness
+      trade-off).</td></tr>
+    <tr><td><code>createApp(deps)</code> factory</td><td>"How do we test the IdP fast?" → inject an
+      in-memory store + ephemeral keypair; no Docker, milliseconds per test.</td></tr>
+    <tr><td>Signup grants a default, issues no token</td><td>"How do we get an entitled-but-unprovisioned
+      user for Flow C?" → signup does exactly that; login is a separate step.</td></tr>
+  </table>
+</section>
+
+<!-- ============ 6. TECHNICAL DECISIONS (ADRs) ============ -->
+<section id="adr">
+  <h2>6 · Technical decisions (ADRs)</h2>
+  <p class="lead">The Architecture Decision Records this stage implements.</p>
+  <table>
+    <tr><th>ADR</th><th>Decision</th><th>Why (plain)</th></tr>
+    <tr><td><a class="inline" href="../adr/0003-entitlements-in-token.md">0003</a></td>
+      <td>Carry entitlements inside the token</td>
+      <td>The IdP decides grants once at login; tenants read them from the signed token and authorize offline.</td></tr>
+    <tr><td><a class="inline" href="../adr/0006-no-user-enumeration.md">0006</a></td>
+      <td>Constant-time login</td>
+      <td>Wrong password and unknown email return the same body in the same time — no account harvesting.</td></tr>
+    <tr><td><a class="inline" href="../adr/0009-signup-default-entitlement.md">0009</a></td>
+      <td>Signup grants <code>tenant_a:[member]</code></td>
+      <td>Produces an entitled-but-unprovisioned user — the precondition for Flow C (P1.4).</td></tr>
+  </table>
+</section>
+
+<!-- ============ 7. TEST IT LOCALLY ============ -->
+<section id="test">
+  <h2>7 · How to test / check it locally</h2>
+  <pre>npm install
+npm test                 <span class="c"># vitest — 33/33 (common + auth-service)</span>
+npm test -- login        <span class="c"># run just the /login criteria</span></pre>
+  <p>A green run proves every acceptance criterion in
+  <a class="inline" href="../../specs/02-auth-service.md">spec 02</a>: valid login returns a verifiable
+  token carrying the right entitlements; wrong password and unknown email are <b>byte-identical</b>
+  <span class="pill p401">401</span>s and the unknown-email path still hashes; signup creates the
+  identity + default grant, rejects duplicates with <span class="pill p403" style="background:rgba(255,123,114,.18)">409</span>,
+  and rejects short passwords with <span class="pill p401" style="background:rgba(240,136,62,.18)">400</span>;
+  and the JWKS endpoint serves a public-only key that verifies a minted token.</p>
+  <div class="note">See it for real (needs Docker):
+  <pre>docker compose up -d                                   <span class="c"># Postgres + auth_db (seeds on first boot)</span>
+AUTH_DATABASE_URL=postgres://sso:sso@localhost:5432/auth_db \
+  npx tsx packages/auth-service/src/server.ts &amp;
+curl -s localhost:8000/.well-known/jwks.json           <span class="c"># public key + kid, no private fields</span>
+curl -s -X POST localhost:8000/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"bob@example.com","password":"password123"}'   <span class="c"># → access_token; decode it</span></pre>
+  Decode the token's middle part (base64url) to see <code>entitlements</code>, <code>iss</code>,
+  <code>aud</code>, <code>sub</code>, and <code>exp − iat = 900</code>.</div>
+</section>
+
+<!-- ============ 8. GLOSSARY ============ -->
+<section id="glossary">
+  <h2>8 · Glossary (new terms this stage)</h2>
+  <dl class="glossary">
+    <dt>IdP (Identity Provider)</dt><dd>The one service that authenticates users and mints tokens. Here, <code>auth-service</code> on :8000.</dd>
+    <dt>Authentication vs authorization</dt><dd>Authentication = "who are you?" (the IdP). Authorization = "what may you do here?" (each tenant).</dd>
+    <dt>bcrypt</dt><dd>A deliberately slow password-hashing function. Slowness makes brute-forcing a stolen hash expensive.</dd>
+    <dt>Hash (password)</dt><dd>A one-way scramble of a password stored instead of the password itself, so a DB leak doesn't reveal plaintext.</dd>
+    <dt>Cost factor / rounds</dt><dd>bcrypt's work setting (here 12 → 2¹² iterations). Higher = slower = harder to crack.</dd>
+    <dt><code>DUMMY_HASH</code></dt><dd>A real bcrypt hash no password matches, compared against on unknown-email logins to keep timing constant.</dd>
+    <dt>User enumeration</dt><dd>An attack that discovers which emails are registered by observing response differences (body or timing).</dd>
+    <dt>Entitlement</dt><dd>A grant of access to a tenant, e.g. <code>tenant_a:["member"]</code>. Decided by the IdP, carried in the token.</dd>
+    <dt>Identity (<code>sub</code>)</dt><dd>A user's global account at the IdP. <code>sub</code> (subject) is its stable id, e.g. <code>u_bob</code>.</dd>
+    <dt>Factory pattern</dt><dd><code>createApp(deps)</code> — building the app from injected dependencies instead of globals, so tests swap them out.</dd>
+    <dt>Dependency injection</dt><dd>Passing collaborators (store, keys) in as arguments rather than importing fixed ones inside.</dd>
+    <dt>zod</dt><dd>A schema-validation library used to check request bodies at the edge of each route.</dd>
+    <dt>Provisioning (preview)</dt><dd>Creating a user's local row inside a tenant. A signed-up user is entitled but not yet provisioned (Flow C, P1.4).</dd>
+    <dt>Bearer token</dt><dd>A token whose mere possession grants access; sent later as <code>Authorization: Bearer &lt;token&gt;</code>.</dd>
+  </dl>
+</section>
+
+<!-- ============ 9. SELF-QUIZ ============ -->
+<section id="quiz">
+  <h2>9 · Self-quiz</h2>
+  <p class="lead">Answer from memory before expanding.</p>
+
+  <details class="card"><summary>1. Why does the login route hash a password even when the email is unknown?</summary>
+    <p class="muted">To keep timing constant. It compares against <code>DUMMY_HASH</code> so unknown-email
+    and wrong-password take the same time and return the same body — no user enumeration. (ADR-0006)</p></details>
+
+  <details class="card"><summary>2. Where do a token's <code>entitlements</code> come from, and why put them in the token?</summary>
+    <p class="muted">The IdP reads them from <code>auth_db</code> at login and signs them into the token.
+    Tenants then authorize by reading the signed token — no per-request call back to the IdP. (ADR-0003)</p></details>
+
+  <details class="card"><summary>3. What does <code>POST /signup</code> return, and what state is the new user in?</summary>
+    <p class="muted"><span class="pill p403" style="background:rgba(63,185,80,.18)">201</span>
+    <code>{ sub, email }</code> — <b>no token</b>. The user is entitled to <code>tenant_a</code> but has
+    no local row there yet: the Flow C precondition. (ADR-0009)</p></details>
+
+  <details class="card"><summary>4. Why does <code>createApp</code> take its store and keys as arguments?</summary>
+    <p class="muted">So tests inject an in-memory store and an ephemeral keypair and run with no Postgres
+    or Docker — fast, isolated, deterministic. That's the factory pattern.</p></details>
+
+  <details class="card"><summary>5. A wrong password returns <code>401 invalid_credentials</code>. What does an unknown email return?</summary>
+    <p class="muted">Exactly the same — byte-identical <span class="pill p401">401</span>
+    <code>invalid_credentials</code>, in the same time. The attacker can't tell the two cases apart.</p></details>
+
+  <details class="card"><summary>6. What's the difference between authentication and authorization, and which does P1.2 do?</summary>
+    <p class="muted">Authentication = "who are you?"; authorization = "what may you do here?". P1.2 (the IdP)
+    does authentication and <i>records</i> authorization as entitlements in the token. Enforcing them
+    happens at the tenant in P1.3.</p></details>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Source of truth: <a class="inline" href="../../specs/">specs/</a> ·
+  Design: <a class="inline" href="../ARCHITECTURE.md">docs/ARCHITECTURE.md</a> &amp;
+  <a class="inline" href="../adr/">the ADRs</a> ·
+  Master concept guide: <a class="inline" href="../../study.html">study.html</a> ·
+  Summary: <a class="inline" href="../summaries/P1.2-auth-service.md">../summaries/P1.2-auth-service.md</a>
+</footer>
+
+</body>
+</html>
