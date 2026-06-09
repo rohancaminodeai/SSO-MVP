@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<!--
+============================================================================
+  HOW TO USE THIS TEMPLATE  (read this whole block before writing)
+============================================================================
+  This is the SKELETON for every per-task study guide in this project.
+  At each stage checkpoint:
+    1. COPY this file to  docs/study_materials/<task>.html  (e.g. P1.1-keys-jwt.html).
+    2. Fill EVERY "FILL:" placeholder comment in the body. Do not delete sections; if one
+       truly does not apply, write "Not applicable this stage" and say why.
+    3. Do NOT invent new structure or reorder sections — this template IS the spec.
+       The gold-standard reference for tone & richness is the root  study.html .
+       The worked example to imitate is  docs/study_materials/P1.0-infra.html .
+
+  THE PATTERN (every guide must move through these four):
+    EXPLAIN  → big idea + what we built + must-know concepts   (sections 1–3)
+    EXAMPLE  → the real code, shown gently with comments        (section 4)
+    REFLECT  → why each decision, the trade-offs, the ADRs      (sections 5–6)
+    PRACTICE → run it locally, glossary, self-quiz              (sections 7–9)
+
+  PLAIN-ENGLISH RULES (non-negotiable — this teaches OTHER engineers):
+    • Short sentences. Active voice. Write to communicate, not to impress.
+    • Define every acronym in parentheses on FIRST use, e.g. "JWT (JSON Web Token)".
+    • No unexplained jargon. If a term is unavoidable, define it where it appears
+      AND add it to the Glossary.
+    • Concrete BEFORE abstract: show a real example, then state the general rule.
+    • One idea per box. Prefer a small diagram/table/snippet over a wall of text.
+
+  REQUIRED TEACHING DEVICES (use the CSS classes already defined below):
+    • At least ONE analogy per hard concept ............ <div class="analogy">
+    • A why-box for each design choice ................. <div class="why">
+    • A warn-box for each security pitfall / gotcha .... <div class="warnbox">
+    • A neutral aside / clarification .................. <div class="note">
+    • A worked code example WITH inline comments ....... <pre> ... <span class="c">// …</span>
+    • Numbered steps for any flow ..................... <div class="step"><div class="n">1</div>…
+    • Status pills for HTTP results .................... <span class="pill p200|p401|p403">
+    • Color-coded cards where roles differ ............. <div class="card idp|tenant|accent|warn">
+    • A glossary of every NEW term this stage introduced <dl class="glossary">
+    • A self-quiz: 3–6 RECALL questions, answers hidden  <details class="card"><summary>…
+
+  MUST-KNOW CONCEPTS (section 3) — each numbered card MUST contain, in order:
+    (a) plain definition   (b) why it matters   (c) an analogy   (d) the common pitfall.
+    Link the relevant ADR (docs/adr/NNNN-*.md) when one exists.
+    Pick the 3–5 concepts an intermediate→senior engineer MUST remember from this stage.
+
+  Keep the file SELF-CONTAINED: all CSS inline, no external requests.
+============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- FILL: <title>PX.Y — Short Task Name · SSO MVP Study Guide</title> -->
+<title>PX.Y — Task Name · SSO MVP Study Guide</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a2027; --panel2:#222c36; --ink:#e6edf3; --muted:#9aa7b4;
+    --accent:#6ea8fe; --accent2:#7ee787; --warn:#f0883e; --danger:#ff7b72; --line:#30363d;
+    --idp:#a371f7; --tenant:#3fb950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header.hero{padding:34px 24px 24px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#161b22,#0f1419)}
+  header.hero h1{margin:0 0 8px;font-size:26px}
+  header.hero p{margin:0;color:var(--muted)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 10px;border-radius:20px;background:var(--panel2);color:var(--accent);
+    border:1px solid var(--accent);margin-bottom:10px}
+  .layout{display:flex;max-width:1180px;margin:0 auto;gap:28px;padding:0 24px 80px}
+  nav{position:sticky;top:0;align-self:flex-start;padding-top:26px;min-width:210px;
+    max-height:100vh;overflow-y:auto;font-size:14px}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 10px;border-radius:7px;border-left:2px solid transparent}
+  nav a:hover{color:var(--ink);background:var(--panel)}
+  nav .grp{margin:14px 0 4px;color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+  main{flex:1;min-width:0;padding-top:18px}
+  section{padding:26px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;margin:0 0 6px}
+  h3{font-size:17px;margin:22px 0 8px;color:var(--accent2)}
+  .lead{color:var(--muted);margin:0 0 14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0}
+  .card.idp{border-left:4px solid var(--idp)}
+  .card.tenant{border-left:4px solid var(--tenant)}
+  .card.accent{border-left:4px solid var(--accent)}
+  .card.warn{border-left:4px solid var(--warn)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}.layout{flex-direction:column}nav{position:static;max-height:none}}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;background:#0b0f14;border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;font-size:13.5px;color:#c8d3de}
+  pre{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+    font-size:13.5px;line-height:1.55;margin:10px 0;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  pre .c{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel2);color:var(--ink)}
+  .muted{color:var(--muted)}
+  .note{border-left:4px solid var(--accent);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .why{border-left:4px solid var(--accent2);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .warnbox{border-left:4px solid var(--danger);background:var(--panel);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  ul,ol{padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .p200{background:rgba(63,185,80,.18);color:var(--accent2)}
+  .p401{background:rgba(240,136,62,.18);color:var(--warn)}
+  .p403{background:rgba(255,123,114,.18);color:var(--danger)}
+  .step{display:flex;gap:14px;margin:10px 0}
+  .step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step .b{flex:1}
+  .step .b b{color:var(--ink)}
+  .concept{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:0 12px 12px 0;padding:14px 20px;margin:14px 0}
+  .concept h3{margin:0 0 8px;color:var(--ink)}
+  .concept .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:var(--accent);color:#0b0f14;font-weight:700;font-size:14px;margin-right:8px}
+  .concept .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .analogy{background:rgba(110,168,254,.07);border:1px dashed var(--accent);border-radius:10px;padding:12px 16px;margin:12px 0}
+  .analogy b{color:var(--accent)}
+  .glossary dt{font-weight:700;color:var(--accent);margin-top:12px}
+  .glossary dd{margin:2px 0 0;color:var(--muted)}
+  a.inline{color:var(--accent);text-decoration:none}
+  a.inline:hover{text-decoration:underline}
+  footer{max-width:1180px;margin:0 auto;padding:24px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <!-- FILL: tag = phase/stage label · h1 = task title · p = one-paragraph plain-English intro -->
+  <span class="tag">Study Guide · Phase N · PX.Y</span>
+  <h1>PX.Y — Task Name</h1>
+  <p><!-- FILL: 2–3 sentences. What did this task build, and why should another engineer care?
+       Plain English. State the audience's needed background if any. --></p>
+  <p class="muted" style="margin-top:8px">
+    Branch <code>feat/NN-...</code> · Spec <code>specs/NN-....md</code> ·
+    Summary <a class="inline" href="../summaries/PX.Y-task.md">../summaries/PX.Y-task.md</a> ·
+    Status: <span class="pill p200">✓ done</span>
+  </p>
+</header>
+
+<div class="layout">
+<nav>
+  <!-- Keep these four groups and this order. Rename anchors to match your section ids. -->
+  <div class="grp">Start here</div>
+  <a href="#big-idea">1 · The big idea</a>
+  <a href="#what">2 · What we built</a>
+  <a href="#concepts">3 · Must-know concepts</a>
+  <div class="grp">The code</div>
+  <a href="#how">4 · How it works</a>
+  <div class="grp">Why &amp; how</div>
+  <a href="#why">5 · Why each decision</a>
+  <a href="#adr">6 · Technical decisions (ADRs)</a>
+  <div class="grp">Practice</div>
+  <a href="#test">7 · Test it locally</a>
+  <a href="#glossary">8 · Glossary</a>
+  <a href="#quiz">9 · Self-quiz</a>
+</nav>
+
+<main>
+
+<!-- ============ 1. BIG IDEA  (EXPLAIN / hook) ============ -->
+<section id="big-idea">
+  <h2>1 · The big idea</h2>
+  <p class="lead"><!-- FILL: the whole task in ONE sentence, bolded. --></p>
+  <!-- FILL: 1–2 short paragraphs framing the problem this task solves. -->
+  <div class="analogy">
+    <b>Analogy.</b> <!-- FILL: one everyday analogy that makes the idea click. -->
+  </div>
+</section>
+
+<!-- ============ 2. WHAT WE BUILT  (EXPLAIN) ============ -->
+<section id="what">
+  <h2>2 · What we built / changed</h2>
+  <p class="lead">The concrete artifacts produced in this stage.</p>
+  <div class="grid2">
+    <div class="card accent">
+      <h3 style="margin-top:0">Code &amp; tests</h3>
+      <ul><!-- FILL: files added/changed, with one-line purpose each. Link them. --></ul>
+    </div>
+    <div class="card accent">
+      <h3 style="margin-top:0">Config / infra / docs</h3>
+      <ul><!-- FILL: supporting changes (env, compose, ADRs, specs). --></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. MUST-KNOW CONCEPTS  (EXPLAIN) ============ -->
+<section id="concepts">
+  <h2>3 · Must-know concepts (top 3–5)</h2>
+  <p class="lead">The ideas an intermediate→senior engineer must walk away with. Each card:
+    definition → why it matters → analogy → the pitfall.</p>
+
+  <!-- Repeat this .concept block 3 to 5 times. -->
+  <div class="concept">
+    <h3><span class="num">1</span><!-- FILL: concept name --></h3>
+    <p class="label">What it is</p>
+    <p><!-- FILL: plain definition. --></p>
+    <p class="label">Why it matters</p>
+    <p><!-- FILL: the consequence if you get it wrong / right. --></p>
+    <div class="analogy"><b>Analogy.</b> <!-- FILL --></div>
+    <div class="warnbox"><b>Pitfall.</b> <!-- FILL: the common mistake / attack. -->
+      <span class="muted">(<!-- FILL: ADR-000N if relevant -->)</span></div>
+  </div>
+  <!-- /repeat -->
+</section>
+
+<!-- ============ 4. HOW IT WORKS  (EXAMPLE) ============ -->
+<section id="how">
+  <h2>4 · How it works (the code, gently)</h2>
+  <p class="lead">The few snippets that matter, explained next to the idea. You do not need to be an
+    expert to follow these.</p>
+
+  <h3><!-- FILL: snippet heading --></h3>
+  <pre><!-- FILL: real code from this stage. Add inline comments with --><span class="c">// like this</span></pre>
+  <p class="muted"><!-- FILL: one or two sentences explaining what the snippet does. --></p>
+
+  <!-- Add a numbered flow if this stage has one: -->
+  <!--
+  <div class="step"><div class="n">1</div><div class="b"><b>X →</b> ...</div></div>
+  <div class="step"><div class="n">2</div><div class="b"><b>Y →</b> ...</div></div>
+  -->
+</section>
+
+<!-- ============ 5. WHY EACH DECISION  (REFLECT) ============ -->
+<section id="why">
+  <h2>5 · Why each decision exists</h2>
+  <p class="lead">Each design choice answers a real-world "what if?". Question → answer.</p>
+  <table>
+    <tr><th>Decision</th><th>The worry it answers / the trade-off</th></tr>
+    <!-- FILL: one row per notable choice in this stage. -->
+    <tr><td><!-- FILL --></td><td><!-- FILL --></td></tr>
+  </table>
+</section>
+
+<!-- ============ 6. TECHNICAL DECISIONS (ADRs)  (REFLECT) ============ -->
+<section id="adr">
+  <h2>6 · Technical decisions (ADRs)</h2>
+  <p class="lead">The Architecture Decision Records this stage implements or relies on.</p>
+  <table>
+    <tr><th>ADR</th><th>Decision</th><th>Why (plain)</th></tr>
+    <!-- FILL: link each ADR, e.g. <a class="inline" href="../adr/0001-...md">0001</a> -->
+    <tr><td><!-- FILL --></td><td><!-- FILL --></td><td><!-- FILL --></td></tr>
+  </table>
+</section>
+
+<!-- ============ 7. TEST IT LOCALLY  (PRACTICE) ============ -->
+<section id="test">
+  <h2>7 · How to test / check it locally</h2>
+  <pre><!-- FILL: the exact commands. --></pre>
+  <p><!-- FILL: what a green run PROVES (tie it back to the spec's acceptance criteria). --></p>
+</section>
+
+<!-- ============ 8. GLOSSARY  (PRACTICE) ============ -->
+<section id="glossary">
+  <h2>8 · Glossary (new terms this stage)</h2>
+  <dl class="glossary">
+    <!-- FILL: every term you used that a newcomer might not know. -->
+    <dt><!-- term --></dt><dd><!-- one-line plain definition --></dd>
+  </dl>
+</section>
+
+<!-- ============ 9. SELF-QUIZ  (PRACTICE / retrieval) ============ -->
+<section id="quiz">
+  <h2>9 · Self-quiz</h2>
+  <p class="lead">Answer from memory before expanding. If you can do these, you understand the stage.</p>
+
+  <!-- Repeat 3–6 times. Questions must require RECALL, not recognition. -->
+  <details class="card"><summary><!-- FILL: question --></summary>
+    <p class="muted"><!-- FILL: the answer + a one-line why. --></p></details>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Source of truth: <a class="inline" href="../../specs/">specs/</a> ·
+  Design: <a class="inline" href="../ARCHITECTURE.md">docs/ARCHITECTURE.md</a> &amp;
+  <a class="inline" href="../adr/">the ADRs</a> ·
+  Master concept guide: <a class="inline" href="../../study.html">study.html</a> ·
+  Summary: <a class="inline" href="../summaries/PX.Y-task.md">../summaries/PX.Y-task.md</a>
+</footer>
+
+</body>
+</html>
