@@ -1,13 +1,21 @@
 import express, { type Express } from "express";
 import type { AppDeps } from "./types.ts";
+import { loginRoute } from "./routes/login.ts";
+import { signupRoute } from "./routes/signup.ts";
+import { jwksRoute } from "./routes/jwks.ts";
 
 /**
- * IdP application factory. STUB (P1.2 red) — every route returns 501 so the
- * acceptance tests fail until the real routes are implemented in the green step.
+ * IdP application factory. Takes its dependencies (store, signing keys, issuer/
+ * audience) as arguments so tests inject a throwaway in-memory store and an
+ * ephemeral keypair, with no global state. Production wiring lives in server.ts.
  */
-export function createApp(_deps: AppDeps): Express {
+export function createApp(deps: AppDeps): Express {
   const app = express();
   app.use(express.json());
-  app.use((_req, res) => res.status(501).json({ error: "not_implemented" }));
+
+  app.use(jwksRoute(deps));
+  app.use(loginRoute(deps));
+  app.use(signupRoute(deps));
+
   return app;
 }
