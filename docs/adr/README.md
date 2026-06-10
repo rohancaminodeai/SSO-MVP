@@ -13,5 +13,6 @@ and append-only — supersede rather than rewrite. New decision during a stage? 
 | [0006](./0006-no-user-enumeration.md) | Constant-time login (no user enumeration) | Accepted |
 | [0007](./0007-one-image-many-roles.md) | One image, many roles (config-per-tenant) | Accepted |
 | [0008](./0008-idempotent-migration.md) | Idempotent, restartable migration | Accepted |
+| [0009](./0009-signup-default-entitlement.md) | Signup grants a default entitlement (`tenant_a:[member]`) | Accepted |
 
 > ADR template: **Context** (the forces) · **Decision** (what we do) · **Consequences** (trade-off).

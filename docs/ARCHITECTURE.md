@@ -75,6 +75,7 @@ code pointed at its own data. See [ADR-0007](./adr/0007-one-image-many-roles.md)
 **Phase 1**
 - `auth_db.identities` — `sub` (pk, global user id), `email` (unique), `password_hash`, `name`, `created_at`
 - `auth_db.entitlements` — `(sub, tenant_id)` pk, `roles text[]` — who may enter which tenant
+  (granted at signup with a default of `tenant_a:[member]`, see [ADR-0009](./adr/0009-signup-default-entitlement.md))
 - `tenant_*_db.users` — `id` (pk), `idp_sub` (unique link to the global `sub`), `display_name`, roles, `created_at`
 - `tenant_*_db.data_items` — `id`, `owner_idp_sub`, payload — the tenant's own data
 
@@ -146,6 +147,7 @@ Every tenant request runs these in order; the **first** failure decides the stat
 - [0006](./adr/0006-no-user-enumeration.md) — Constant-time login (no user enumeration).
 - [0007](./adr/0007-one-image-many-roles.md) — One image, many roles.
 - [0008](./adr/0008-idempotent-migration.md) — Idempotent, restartable migration.
+- [0009](./adr/0009-signup-default-entitlement.md) — Signup grants a default entitlement (`tenant_a:[member]`).
 
 ## 9. Phase roadmap
 
